@@ -5,7 +5,7 @@ from datetime import datetime
 from dataclasses import asdict, dataclass
 
 from .config import Config, DEFAULT_CONFIG
-from .util import total_time_estimate
+from .util import total_time_estimate, get_git_branch
 from .instance import Instance
 from .item import Item
 from .script import Script
@@ -30,6 +30,7 @@ class Batch:
         self.results_path = os.path.abspath(results_path)
         
         self.config = copy(DEFAULT_CONFIG)
+        self.config.branch = get_git_branch(self.sop_solver_path)
         self.index = 0
         self.items: list = []
         self.timestamp = datetime.now()

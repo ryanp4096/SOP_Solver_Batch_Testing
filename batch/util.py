@@ -10,14 +10,15 @@ def read_file(path: str):
         content = file.read()
     return content
 
-def get_git_branch():
+def get_git_branch(cwd=None):
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            cwd=cwd
         )
         return result.stdout.strip()
     except Exception as e:

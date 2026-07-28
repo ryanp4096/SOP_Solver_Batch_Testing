@@ -3,12 +3,17 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING: from .batch import Batch
 
 import os
-from dataclasses import asdict
+from dataclasses import dataclass, asdict
 
 from .instance import Instance
 from .config import Config, DEFAULT_CONFIG
 from .util import write_file
 from .parse import ParsedRun
+
+@dataclass(frozen=True)
+class Build:
+    branch: str
+    trace: bool
 
 class Item:
     def __init__(self, index: int, batch: Batch, instance: Instance, config: Config, path: str, id: str, results: dict):
@@ -32,6 +37,9 @@ class Item:
             id = None,
             results = None
         )
+        
+    def get_build(self):
+        return Build(branch = self.config.branch, trace = self.config.trace)
     
     def individual_time_estimate(self):
         if self.instance.time_estimate is None: return

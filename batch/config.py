@@ -1,4 +1,3 @@
-from .util import get_git_branch
 from .instance import Instance
 
 class Config:
@@ -11,6 +10,9 @@ class Config:
             runs: int = None,
             process_best_tour: bool = None,
             reuse_thread: bool = None,
+            finish_lkh_before_bb: bool = None,
+            process_lkh_subpaths: bool = None,
+            trace: bool = None,
             branch: str = None,
             tag: str = None
         ):
@@ -21,6 +23,9 @@ class Config:
         self.runs = runs
         self.process_best_tour = process_best_tour
         self.reuse_thread = reuse_thread
+        self.finish_lkh_before_bb = finish_lkh_before_bb
+        self.process_lkh_subpaths = process_lkh_subpaths
+        self.trace = trace
         self.branch = branch
         self.tag = tag
 
@@ -37,6 +42,9 @@ class Config:
                 runs = config.runs,
                 process_best_tour = config.process_best_tour,
                 reuse_thread = config.reuse_thread,
+                finish_lkh_before_bb = config.finish_lkh_before_bb,
+                process_lkh_subpaths = config.process_lkh_subpaths,
+                trace = config.trace,
                 branch = config.branch,
                 tag = config.tag
             )
@@ -51,6 +59,9 @@ class Config:
             runs: int = None,
             process_best_tour: bool = None,
             reuse_thread: bool = None,
+            finish_lkh_before_bb: bool = None,
+            process_lkh_subpaths: bool = None,
+            trace: bool = None,
             branch: str = None,
             tag: str = None
         ):
@@ -61,6 +72,9 @@ class Config:
         if runs is not None: self.runs = runs
         if process_best_tour is not None: self.process_best_tour = process_best_tour
         if reuse_thread is not None: self.reuse_thread = reuse_thread
+        if finish_lkh_before_bb is not None: self.finish_lkh_before_bb = finish_lkh_before_bb
+        if process_lkh_subpaths is not None: self.process_lkh_subpaths = process_lkh_subpaths
+        if trace is not None: self.trace = trace
         if branch is not None: self.branch = branch
         if tag is not None: self.tag = tag
     
@@ -122,6 +136,12 @@ PROCESS_LKH_BEST_TOUR = {1 if self.process_best_tour else 0}
 
 // Reuse lkh thread to run branch and bound after lkh end time reached (1 for enable 0 for disable)
 REUSE_LKH_THREAD = {1 if self.reuse_thread else 0}
+
+// Finish lkh before starting branch and bound, instead of running in parallel (for debugging) (1 for enable 0 for disable)
+FINISH_LKH_BEFORE_BB = {1 if self.finish_lkh_before_bb else 0}
+
+// Process each subpath of the lkh tour as a separate history table entry (1 for enable 0 for disable)
+PROCESS_LKH_SUBPATHS = {1 if self.process_lkh_subpaths else 0}
 '''
     
     def dump(self):
@@ -133,6 +153,9 @@ REUSE_LKH_THREAD = {1 if self.reuse_thread else 0}
             'runs': self.runs,
             'process_best_tour': self.process_best_tour,
             'reuse_thread': self.reuse_thread,
+            'finish_lkh_before_bb': self.finish_lkh_before_bb,
+            'process_lkh_subpaths': self.process_lkh_subpaths,
+            'trace': self.trace,
             'branch': self.branch,
             'tag': self.tag
         }
@@ -150,6 +173,9 @@ DEFAULT_CONFIG = Config(
     runs = 1,
     process_best_tour = True,
     reuse_thread = True,
-    branch = get_git_branch(),
+    finish_lkh_before_bb = False,
+    process_lkh_subpaths = True,
+    trace = False,
+    branch = None,
     tag = None
 )
