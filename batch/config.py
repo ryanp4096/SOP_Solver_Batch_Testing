@@ -18,6 +18,7 @@ class Config:
             process_lkh_subpaths: bool = None,
             trace: bool = None,
             trace_detail_level: int = None,
+            background: bool = None,
             branch: str = None,
             tag: str = None
         ):
@@ -32,6 +33,7 @@ class Config:
         self.process_lkh_subpaths = process_lkh_subpaths
         self.trace = trace
         self.trace_detail_level = trace_detail_level
+        self.background = background
         self.branch = branch
         self.tag = tag
 
@@ -52,6 +54,7 @@ class Config:
                 process_lkh_subpaths = config.process_lkh_subpaths,
                 trace = config.trace,
                 trace_detail_level = config.trace_detail_level,
+                background = config.background,
                 branch = config.branch,
                 tag = config.tag
             )
@@ -70,6 +73,7 @@ class Config:
             process_lkh_subpaths: bool = None,
             trace: bool = None,
             trace_detail_level: int = None,
+            background: bool = None,
             branch: str = None,
             tag: str = None
         ):
@@ -84,6 +88,7 @@ class Config:
         if process_lkh_subpaths is not None: self.process_lkh_subpaths = process_lkh_subpaths
         if trace is not None: self.trace = trace
         if trace_detail_level is not None: self.trace_detail_level = trace_detail_level
+        if background is not None: self.background = background
         if branch is not None: self.branch = branch
         if tag is not None: self.tag = tag
     
@@ -169,6 +174,7 @@ TRACE_DETAIL_LEVEL = {self.trace_detail_level}
             'process_lkh_subpaths': self.process_lkh_subpaths,
             'trace': self.trace,
             'trace_detail_level': self.trace_detail_level,
+            'background': self.background,
             'branch': self.branch,
             'tag': self.tag
         }
@@ -190,6 +196,7 @@ DEFAULT_CONFIG = Config(
     process_lkh_subpaths = True,
     trace = False,
     trace_detail_level = 0,
+    background = False,
     branch = None,
     tag = None
 )

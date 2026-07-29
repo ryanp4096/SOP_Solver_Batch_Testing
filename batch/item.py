@@ -16,7 +16,7 @@ class Build:
     trace: bool
 
 class Item:
-    def __init__(self, index: int, batch: Batch, instance: Instance, config: Config, path: str, id: str, results: dict):
+    def __init__(self, index: int, batch: Batch, instance: Instance, config: Config, path: str, id: str, results: dict, wait_background: bool):
         self.index = index
         self.batch = batch
         self.instance = instance
@@ -25,6 +25,7 @@ class Item:
         self.id = id
         self.run_index = 0
         self.results = results
+        self.wait_background = wait_background
 
     @classmethod
     def create(cls, batch, instance: Instance, *configs: Config):
@@ -35,7 +36,8 @@ class Item:
             config = Config.merge(DEFAULT_CONFIG, batch.config, *configs),
             path = None,
             id = None,
-            results = None
+            results = None,
+            wait_background = False
         )
         
     def get_build(self):
@@ -60,6 +62,7 @@ class Item:
     
     def create_directory(self):
         self.id = f'{self.index}_{self.instance.name}'
+        if self.config.tag: self.id += f'_{self.config.tag}'
         self.path = f'{self.batch.path}/{self.id}'
         os.mkdir(self.path)
         write_file(f'{self.path}/config.txt', self.config.config_file(self.instance))
@@ -75,7 +78,8 @@ class Item:
             'config': self.config.dump(),
             'path': self.path,
             'id': self.id,
-            'results': {index: asdict(result) for index, result in self.results.items()} if self.results else None
+            'results': {index: asdict(result) for index, result in self.results.items()} if self.results else None,
+            'wait_background': self.wait_background
         }
     
     @classmethod
@@ -87,7 +91,8 @@ class Item:
             config = Config.load(data['config']),
             path = data['path'],
             id = data['id'],
-            results = {index: ParsedRun(**result) for index, result in data['results'].items()} if data['results'] else None
+            results = {index: ParsedRun(**result) for index, result in data['results'].items()} if data['results'] else None,
+            wait_background = data.get('wait_background', False)
         )
 
 

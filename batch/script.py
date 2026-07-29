@@ -36,11 +36,11 @@ class Script:
         self.current_run = 0
         self.total_runs = sum(item.config.runs for item in self.batch.items)
         
+        self.background_runs = 0
+        self.background_time = 0
+        
         if self.batch.settings.time_estimate:
-            self.total_time_estimate = 0
-            for item in self.batch.items:
-                est = item.time_estimate()
-                if est is not None: self.total_time_estimate += est
+            self.total_time_estimate, _ = self.batch.total_time_estimate()
             
     def build(self):
         self.append('#!/bin/bash')
@@ -52,6 +52,7 @@ class Script:
 
         self.create_builds()
         self.add_runs()
+        self.wait_background()
         self.process_results()
     
     def create_builds(self, builds: set = None):
@@ -100,13 +101,20 @@ class Script:
         l += f'  {run.item.index}. {run.item.instance.name}'
         if run.item.config.tag: l += f' [{run.item.config.tag}]'
         l += f'  ({run.index}/{run.item.config.runs})'
-        if self.batch.settings.time_estimate: l += f'  ({format_time_estimate(self.total_time_estimate)} remaining)'
+        if run.item.config.background: l += f'  (running in background)'
+        elif self.batch.settings.time_estimate: l += f'  ({format_time_estimate(self.total_time_estimate)} remaining)'
         # l += f'  {run.item.path}/{run.index}.log'
         self.echo(l)
 
         if self.batch.settings.time_estimate:
             est = run.time_estimate()
-            if est is not None: self.total_time_estimate -= est
+            if run.item.config.background:
+                self.background_runs += 1
+                if est is not None and est > self.background_time: self.background_time = est
+            elif est is not None:
+                self.total_time_estimate -= est
+                self.background_time -= est
+                if self.background_time < 0: self.background_time = 0
         
         trace_indicator = '+t' if run.item.config.trace else ''
         build = f'"$BUILDS/{run.item.config.branch}{trace_indicator}"'
@@ -115,8 +123,12 @@ class Script:
         config_path = f'"$RESULTS/{run.item.id}/config.txt"'
         log_path = f'"$RESULTS/{run.item.id}/{run.index}.log"'
         trace_path = f'"$RESULTS/{run.item.id}/{run.index}_trace.bin"' if run.item.config.trace else ''
-        self.append(f'{build} {instance_path} {thread_count} {config_path} {trace_path} > {log_path}')
+        background = '&' if run.item.config.background else ''
+        self.append(f'{build} {instance_path} {thread_count} {config_path} {trace_path} > {log_path} {background}')
         self.append('')
+        
+        if run.item.wait_background and run.index == run.item.config.runs:
+            self.wait_background()
 
     def append(self, line: str):
         self.lines.append(line)
@@ -124,7 +136,18 @@ class Script:
     def echo(self, line: str):
         self.append(f'''echo "{line}" | tee -a "$LOG"''')
 
-    def process_results(self):
+    def wait_background(self):
+        if self.background_runs > 0:
+            l = 'Waiting for background runs'
+            if self.batch.settings.time_estimate: l += f'  ({format_time_estimate(self.total_time_estimate)} remaining)'
+            self.echo(l)
+            self.append('wait')
+            self.append('')
+            self.background_runs = 0
+            self.total_time_estimate -= self.background_time
+            self.background_time = 0
+
+    def process_results(self):        
         self.append('set -e')
         self.echo("Processing Results")
         self.append('cd "$PYTHON"')
@@ -170,4 +193,6 @@ class PatchScript(Script):
             random.shuffle(runs)
 
         for run in runs:
+            run.item.config.background = False
+            run.item.wait_background = False
             self.add_run(run)

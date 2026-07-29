@@ -5,7 +5,7 @@ from datetime import datetime
 from dataclasses import asdict, dataclass
 
 from .config import Config, DEFAULT_CONFIG
-from .util import total_time_estimate, get_git_branch
+from .util import format_time_estimate, get_git_branch
 from .instance import Instance
 from .item import Item
 from .script import Script
@@ -47,11 +47,45 @@ class Batch:
     def add(self, instance: str, *configs: Config, **kwargs):
         self.items.append(Item.create(self, Instance(instance, self), *configs, Config(**kwargs)))
 
+    def wait_background(self):
+        if not self.items: return
+        self.items[-1].wait_background = True
+
+    def total_time_estimate(self):
+        unknown = set()
+        background_time = 0
+        time_elapsed = 0
+        
+        for item in self.items:
+            if item.config.background:
+                est = item.individual_time_estimate()
+                if est is not None and est > background_time:
+                    background_time = est
+            else:
+                est = item.time_estimate()
+                if est is not None:
+                    time_elapsed += est
+                    background_time -= est
+                    if background_time < 0: background_time = 0
+            if est is None:
+                unknown.add(item.instance.name)
+            
+            if item.wait_background:
+                time_elapsed += background_time
+                background_time = 0
+        
+        time_elapsed += background_time
+        
+        return time_elapsed, unknown
+
     def create(self):
         print(f'Batch: {len(self.items)} items, {sum(item.config.runs for item in self.items)} runs')
         if self.settings.time_estimate:
-            estimates = [(item.instance.name, item.time_estimate()) for item in self.items]
-            print(f'Time Estimate: {total_time_estimate(estimates)}')
+            estimate, unknown = self.total_time_estimate()
+            line = format_time_estimate(estimate, short=False)
+            if len(unknown) > 0:
+                line += f", plus unknown time from {len(unknown)} instances: {', '.join(unknown)}"
+            print(f'Time Estimate: {line}')
         for item in self.items:
             tag = f" [{item.config.tag}]" if item.config.tag else ""
             print(f'{item.index}. {item.instance.name}{tag} ({item.config.runs} runs)')
@@ -75,7 +109,7 @@ class Batch:
         patch_path = results.create_patch()
         if patch_path:
             print(f'{len(results.patch)} unfinished runs detected')
-            print('Run this script to fix these the tests: ./' + patch_path)
+            print('Run this script to fix these the tests: ' + patch_path)
 
     def create_directory(self):
         self.date = self.timestamp.strftime("%Y-%m-%d")
