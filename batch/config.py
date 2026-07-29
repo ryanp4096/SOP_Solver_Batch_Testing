@@ -1,5 +1,9 @@
 from .instance import Instance
 
+class TraceDetailLevel:
+    NORMAL = 0
+    COMPACT = 1
+
 class Config:
     def __init__(
             self,
@@ -13,6 +17,7 @@ class Config:
             finish_lkh_before_bb: bool = None,
             process_lkh_subpaths: bool = None,
             trace: bool = None,
+            trace_detail_level: int = None,
             branch: str = None,
             tag: str = None
         ):
@@ -26,6 +31,7 @@ class Config:
         self.finish_lkh_before_bb = finish_lkh_before_bb
         self.process_lkh_subpaths = process_lkh_subpaths
         self.trace = trace
+        self.trace_detail_level = trace_detail_level
         self.branch = branch
         self.tag = tag
 
@@ -45,6 +51,7 @@ class Config:
                 finish_lkh_before_bb = config.finish_lkh_before_bb,
                 process_lkh_subpaths = config.process_lkh_subpaths,
                 trace = config.trace,
+                trace_detail_level = config.trace_detail_level,
                 branch = config.branch,
                 tag = config.tag
             )
@@ -62,6 +69,7 @@ class Config:
             finish_lkh_before_bb: bool = None,
             process_lkh_subpaths: bool = None,
             trace: bool = None,
+            trace_detail_level: int = None,
             branch: str = None,
             tag: str = None
         ):
@@ -75,6 +83,7 @@ class Config:
         if finish_lkh_before_bb is not None: self.finish_lkh_before_bb = finish_lkh_before_bb
         if process_lkh_subpaths is not None: self.process_lkh_subpaths = process_lkh_subpaths
         if trace is not None: self.trace = trace
+        if trace_detail_level is not None: self.trace_detail_level = trace_detail_level
         if branch is not None: self.branch = branch
         if tag is not None: self.tag = tag
     
@@ -142,6 +151,9 @@ FINISH_LKH_BEFORE_BB = {1 if self.finish_lkh_before_bb else 0}
 
 // Process each subpath of the lkh tour as a separate history table entry (1 for enable 0 for disable)
 PROCESS_LKH_SUBPATHS = {1 if self.process_lkh_subpaths else 0}
+
+// If trace is enabled, set the detail level of the trace (0 = normal, 1 = compact)
+TRACE_DETAIL_LEVEL = {self.trace_detail_level}
 '''
     
     def dump(self):
@@ -156,6 +168,7 @@ PROCESS_LKH_SUBPATHS = {1 if self.process_lkh_subpaths else 0}
             'finish_lkh_before_bb': self.finish_lkh_before_bb,
             'process_lkh_subpaths': self.process_lkh_subpaths,
             'trace': self.trace,
+            'trace_detail_level': self.trace_detail_level,
             'branch': self.branch,
             'tag': self.tag
         }
@@ -176,6 +189,7 @@ DEFAULT_CONFIG = Config(
     finish_lkh_before_bb = False,
     process_lkh_subpaths = True,
     trace = False,
+    trace_detail_level = 0,
     branch = None,
     tag = None
 )
