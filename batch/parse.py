@@ -24,9 +24,11 @@ def parse_run(run_text: str):
     instance = instance_match.group(1).strip() if instance_match else 'Unknown'
 
     # LKH best entry Cost
-    lkh_costs = re.findall(
-        r'Best Cost temp\s*=\s*(\d+)\s+updated by LKH', run_text)
-    final_lkh_cost = float(lkh_costs[-1]) if lkh_costs else None
+    # lkh_costs = re.findall(
+    #     r'Best Cost temp\s*=\s*(\d+)\s+updated by LKH', run_text)
+    # final_lkh_cost = float(lkh_costs[-1]) if lkh_costs else None
+    lkh_cost_match = re.search(r'Processing Best Tour with cost: (\d+)', run_text)
+    final_lkh_cost = float(lkh_cost_match.group(1)) if lkh_cost_match else None
 
     # Time taken for LKH to find its best entry
     lkh_find_time = re.findall(r'setting last updated at.*?([\d.]+)', run_text)
