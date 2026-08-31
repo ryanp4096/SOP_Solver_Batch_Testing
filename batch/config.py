@@ -16,6 +16,7 @@ class Config:
             reuse_thread: bool = None,
             finish_lkh_before_bb: bool = None,
             process_lkh_subpaths: bool = None,
+            subpath_history_table: bool = None,
             trace: bool = None,
             trace_detail_level: int = None,
             background: bool = None,
@@ -31,6 +32,7 @@ class Config:
         self.reuse_thread = reuse_thread
         self.finish_lkh_before_bb = finish_lkh_before_bb
         self.process_lkh_subpaths = process_lkh_subpaths
+        self.subpath_history_table = subpath_history_table
         self.trace = trace
         self.trace_detail_level = trace_detail_level
         self.background = background
@@ -52,6 +54,7 @@ class Config:
                 reuse_thread = config.reuse_thread,
                 finish_lkh_before_bb = config.finish_lkh_before_bb,
                 process_lkh_subpaths = config.process_lkh_subpaths,
+                subpath_history_table = config.subpath_history_table,
                 trace = config.trace,
                 trace_detail_level = config.trace_detail_level,
                 background = config.background,
@@ -71,6 +74,7 @@ class Config:
             reuse_thread: bool = None,
             finish_lkh_before_bb: bool = None,
             process_lkh_subpaths: bool = None,
+            subpath_history_table: bool = None,
             trace: bool = None,
             trace_detail_level: int = None,
             background: bool = None,
@@ -86,6 +90,7 @@ class Config:
         if reuse_thread is not None: self.reuse_thread = reuse_thread
         if finish_lkh_before_bb is not None: self.finish_lkh_before_bb = finish_lkh_before_bb
         if process_lkh_subpaths is not None: self.process_lkh_subpaths = process_lkh_subpaths
+        if subpath_history_table is not None: self.subpath_history_table = subpath_history_table
         if trace is not None: self.trace = trace
         if trace_detail_level is not None: self.trace_detail_level = trace_detail_level
         if background is not None: self.background = background
@@ -159,6 +164,9 @@ PROCESS_LKH_SUBPATHS = {1 if self.process_lkh_subpaths else 0}
 
 // If trace is enabled, set the detail level of the trace (0 = normal, 1 = compact)
 TRACE_DETAIL_LEVEL = {self.trace_detail_level}
+
+// Enable separate history table for subpaths (1 for enable, 0 for disable)
+ENABLE_SUBPATH_HISTORY_TABLE = {1 if self.subpath_history_table else 0}
 '''
     
     def dump(self):
@@ -172,6 +180,7 @@ TRACE_DETAIL_LEVEL = {self.trace_detail_level}
             'reuse_thread': self.reuse_thread,
             'finish_lkh_before_bb': self.finish_lkh_before_bb,
             'process_lkh_subpaths': self.process_lkh_subpaths,
+            'subpath_history_table': self.subpath_history_table,
             'trace': self.trace,
             'trace_detail_level': self.trace_detail_level,
             'background': self.background,
@@ -194,6 +203,7 @@ DEFAULT_CONFIG = Config(
     reuse_thread = True,
     finish_lkh_before_bb = False,
     process_lkh_subpaths = True,
+    subpath_history_table = False,
     trace = False,
     trace_detail_level = 0,
     background = False,
