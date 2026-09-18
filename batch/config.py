@@ -18,6 +18,7 @@ class Config:
             process_lkh_subpaths: bool = None,
             subpath_history_table: bool = None,
             subpath_length_limit: int = None,
+            lkh_subpaths_only: bool = None,
             trace: bool = None,
             trace_detail_level: int = None,
             background: bool = None,
@@ -35,6 +36,7 @@ class Config:
         self.process_lkh_subpaths = process_lkh_subpaths
         self.subpath_history_table = subpath_history_table
         self.subpath_length_limit = subpath_length_limit
+        self.lkh_subpaths_only = lkh_subpaths_only
         self.trace = trace
         self.trace_detail_level = trace_detail_level
         self.background = background
@@ -58,6 +60,7 @@ class Config:
                 process_lkh_subpaths = config.process_lkh_subpaths,
                 subpath_history_table = config.subpath_history_table,
                 subpath_length_limit = config.subpath_length_limit,
+                lkh_subpaths_only = config.lkh_subpaths_only,
                 trace = config.trace,
                 trace_detail_level = config.trace_detail_level,
                 background = config.background,
@@ -79,6 +82,7 @@ class Config:
             process_lkh_subpaths: bool = None,
             subpath_history_table: bool = None,
             subpath_length_limit: int = None,
+            lkh_subpaths_only: bool = None,
             trace: bool = None,
             trace_detail_level: int = None,
             background: bool = None,
@@ -96,6 +100,7 @@ class Config:
         if process_lkh_subpaths is not None: self.process_lkh_subpaths = process_lkh_subpaths
         if subpath_history_table is not None: self.subpath_history_table = subpath_history_table
         if subpath_length_limit is not None: self.subpath_length_limit = subpath_length_limit
+        if lkh_subpaths_only is not None: self.lkh_subpaths_only = lkh_subpaths_only
         if trace is not None: self.trace = trace
         if trace_detail_level is not None: self.trace_detail_level = trace_detail_level
         if background is not None: self.background = background
@@ -175,6 +180,9 @@ ENABLE_SUBPATH_HISTORY_TABLE = {1 if self.subpath_history_table else 0}
 
 // The maximum length of subpaths included in subpath history table (0 = no limit)
 SUBPATH_LENGTH_LIMIT = {self.subpath_length_limit}
+
+// Store only subpaths of LKH's best tour in the history table for faster processing (0 = enable, 1 = disable)
+LKH_SUBPATHS_ONLY = {1 if self.lkh_subpaths_only else 0}
 '''
     
     def dump(self):
@@ -190,6 +198,7 @@ SUBPATH_LENGTH_LIMIT = {self.subpath_length_limit}
             'process_lkh_subpaths': self.process_lkh_subpaths,
             'subpath_history_table': self.subpath_history_table,
             'subpath_length_limit': self.subpath_length_limit,
+            'lkh_subpaths_only': self.lkh_subpaths_only,
             'trace': self.trace,
             'trace_detail_level': self.trace_detail_level,
             'background': self.background,
@@ -214,6 +223,7 @@ DEFAULT_CONFIG = Config(
     process_lkh_subpaths = True,
     subpath_history_table = False,
     subpath_length_limit = 0,
+    lkh_subpaths_only = False,
     trace = False,
     trace_detail_level = 0,
     background = False,
