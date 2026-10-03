@@ -47,6 +47,7 @@ class Results:
                     'enumerated_nodes': result.enumerated_nodes,
                     'lkh_find_time': result.lkh_find_time,
                     'lkh_final_cost': result.lkh_final_cost,
+                    'memory_usage': result.memory_usage,
                     'global_pool_size': result.global_pool_size,
                     'global_pool_remaining': result.global_pool_remaining,
                     'percent_work_done': result.percent_work_done,
@@ -64,6 +65,7 @@ class Results:
             'enumerated_nodes',
             'lkh_find_time',
             'lkh_final_cost',
+            'memory_usage',
             'global_pool_size',
             'global_pool_remaining',
             'percent_work_done',
@@ -82,8 +84,6 @@ class Results:
         if not self.patch: return
 
         script = PatchScript(self.batch, self.patch)
-        script.create_builds()
-        script.add_runs()
-        script.process_results()
+        script.build()
         script_path = script.create_file()
         return script_path

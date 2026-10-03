@@ -5,15 +5,16 @@ from .util import median_helper, match_helper
 
 @dataclass
 class ParsedRun:
-    instance: str
-    final_cost: int
-    final_time: float
-    enumerated_nodes: int
-    lkh_find_time: float
-    lkh_final_cost: int
-    global_pool_size: int
-    global_pool_remaining: int
-    percent_work_done: float
+    instance: str = None
+    final_cost: int = None
+    final_time: float = None
+    enumerated_nodes: int = None
+    lkh_find_time: float = None
+    lkh_final_cost: int = None
+    memory_usage: int = None
+    global_pool_size: int = None
+    global_pool_remaining: int = None
+    percent_work_done: float = None
 
 
 def parse_run(run_text: str):
@@ -76,6 +77,10 @@ def parse_run(run_text: str):
                 final_time = float(values[1])
         except Exception as e:
             print("Error parsing final cost/time:", e)
+    
+    memory_usage_match = re.search(r'Maximum memory used: (\d+) MB', run_text)
+    memory_usage = int(memory_usage_match.group(1)) if memory_usage_match else None
+    
     # During reserch more parameters might be needed to make a meaningful conclusion, or formatting in the log file might change, so just update it accordingly
     return ParsedRun(
         instance = instance,
@@ -84,6 +89,7 @@ def parse_run(run_text: str):
         enumerated_nodes = enumerated_nodes,
         lkh_find_time = final_lkh_find_time,
         lkh_final_cost = final_lkh_cost,
+        memory_usage = memory_usage,
         global_pool_size = gp_const,
         global_pool_remaining = gp_remaining,
         percent_work_done = percent_work_done
@@ -98,6 +104,7 @@ def get_median(runs: list):
         enumerated_nodes = median_helper(r.enumerated_nodes for r in runs),
         lkh_find_time = median_helper(r.lkh_find_time for r in runs),
         lkh_final_cost = median_helper(r.lkh_final_cost for r in runs),
+        memory_usage = median_helper(r.memory_usage for r in runs),
         global_pool_size = median_helper(r.global_pool_size for r in runs),
         global_pool_remaining = median_helper(r.global_pool_remaining for r in runs),
         percent_work_done = median_helper(r.percent_work_done for r in runs)
