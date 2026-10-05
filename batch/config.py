@@ -1,111 +1,48 @@
 from .instance import Instance
+from dataclasses import dataclass, asdict, fields
 
 class TraceDetailLevel:
     NORMAL = 0
     COMPACT = 1
 
+@dataclass
 class Config:
-    def __init__(
-            self,
-            time_limit: int = None,
-            enable_end_lkh: bool = None,
-            end_lkh: int = None,
-            threads: int = None,
-            runs: int = None,
-            process_best_tour: bool = None,
-            reuse_thread: bool = None,
-            finish_lkh_before_bb: bool = None,
-            process_lkh_subpaths: bool = None,
-            subpath_history_table: bool = None,
-            subpath_length_limit: int = None,
-            lkh_subpaths_only: bool = None,
-            trace: bool = None,
-            trace_detail_level: int = None,
-            background: bool = None,
-            branch: str = None,
-            tag: str = None
-        ):
-        self.time_limit = time_limit
-        self.enable_end_lkh = enable_end_lkh
-        self.end_lkh = end_lkh
-        self.threads = threads
-        self.runs = runs
-        self.process_best_tour = process_best_tour
-        self.reuse_thread = reuse_thread
-        self.finish_lkh_before_bb = finish_lkh_before_bb
-        self.process_lkh_subpaths = process_lkh_subpaths
-        self.subpath_history_table = subpath_history_table
-        self.subpath_length_limit = subpath_length_limit
-        self.lkh_subpaths_only = lkh_subpaths_only
-        self.trace = trace
-        self.trace_detail_level = trace_detail_level
-        self.background = background
-        self.branch = branch
-        self.tag = tag
-
+    time_limit: int = None
+    enable_end_lkh: bool = None
+    end_lkh: int = None
+    threads: int = None
+    runs: int = None
+    process_best_tour: bool = None
+    reuse_thread: bool = None
+    finish_lkh_before_bb: bool = None
+    process_lkh_subpaths: bool = None
+    subpath_history_table: bool = None
+    subpath_length_limit: int = None
+    lkh_subpaths_only: bool = None
+    expected_lkh_cost: int = None
+    trace: bool = None
+    trace_detail_level: int = None
+    background: bool = None
+    branch: str = None
+    tag: str = None
+    
     @classmethod
     def merge(cls, *configs):
         merged = cls()
-        for config in configs:
-            if config is None: continue
-            merged.set(
-                time_limit = config.time_limit,
-                enable_end_lkh = config.enable_end_lkh,
-                end_lkh = config.end_lkh,
-                threads = config.threads,
-                runs = config.runs,
-                process_best_tour = config.process_best_tour,
-                reuse_thread = config.reuse_thread,
-                finish_lkh_before_bb = config.finish_lkh_before_bb,
-                process_lkh_subpaths = config.process_lkh_subpaths,
-                subpath_history_table = config.subpath_history_table,
-                subpath_length_limit = config.subpath_length_limit,
-                lkh_subpaths_only = config.lkh_subpaths_only,
-                trace = config.trace,
-                trace_detail_level = config.trace_detail_level,
-                background = config.background,
-                branch = config.branch,
-                tag = config.tag
-            )
+        merged.set(*configs)
         return merged
 
-    def set(
-            self,
-            time_limit: int = None,
-            enable_end_lkh: bool = None,
-            end_lkh: int = None,
-            threads: int = None,
-            runs: int = None,
-            process_best_tour: bool = None,
-            reuse_thread: bool = None,
-            finish_lkh_before_bb: bool = None,
-            process_lkh_subpaths: bool = None,
-            subpath_history_table: bool = None,
-            subpath_length_limit: int = None,
-            lkh_subpaths_only: bool = None,
-            trace: bool = None,
-            trace_detail_level: int = None,
-            background: bool = None,
-            branch: str = None,
-            tag: str = None
-        ):
-        if time_limit is not None: self.time_limit = time_limit
-        if enable_end_lkh is not None: self.enable_end_lkh = enable_end_lkh
-        if end_lkh is not None: self.end_lkh = end_lkh
-        if threads is not None: self.threads = threads
-        if runs is not None: self.runs = runs
-        if process_best_tour is not None: self.process_best_tour = process_best_tour
-        if reuse_thread is not None: self.reuse_thread = reuse_thread
-        if finish_lkh_before_bb is not None: self.finish_lkh_before_bb = finish_lkh_before_bb
-        if process_lkh_subpaths is not None: self.process_lkh_subpaths = process_lkh_subpaths
-        if subpath_history_table is not None: self.subpath_history_table = subpath_history_table
-        if subpath_length_limit is not None: self.subpath_length_limit = subpath_length_limit
-        if lkh_subpaths_only is not None: self.lkh_subpaths_only = lkh_subpaths_only
-        if trace is not None: self.trace = trace
-        if trace_detail_level is not None: self.trace_detail_level = trace_detail_level
-        if background is not None: self.background = background
-        if branch is not None: self.branch = branch
-        if tag is not None: self.tag = tag
+    def set(self, *configs, **kwargs):
+        for config in configs:
+            if config is None: continue
+            for f in fields(self):
+                x = config.__getattribute__(f.name)
+                if x is not None: self.__setattr__(f.name, x)
+        
+        if kwargs:
+            for f in fields(self):
+                x = kwargs.get(f.name)
+                if x is not None: self.__setattr__(f.name, x)
     
     def config_file(self, instance: Instance):
         return f'''
@@ -183,28 +120,14 @@ SUBPATH_LENGTH_LIMIT = {self.subpath_length_limit}
 
 // Store only subpaths of LKH's best tour in the history table for faster processing (0 = enable, 1 = disable)
 LKH_SUBPATHS_ONLY = {1 if self.lkh_subpaths_only else 0}
+
+// For debugging: Keep running lkh after end time until this cost is reached (0 = disable)
+// Only used to get consistent LKH behavior for debugging - do not use in official runs, as expected cost should be unknown
+EXPECTED_LKH_COST = {self.expected_lkh_cost}
 '''
     
     def dump(self):
-        return {
-            'time_limit': self.time_limit,
-            'enable_end_lkh': self.enable_end_lkh,
-            'end_lkh': self.end_lkh,
-            'threads': self.threads,
-            'runs': self.runs,
-            'process_best_tour': self.process_best_tour,
-            'reuse_thread': self.reuse_thread,
-            'finish_lkh_before_bb': self.finish_lkh_before_bb,
-            'process_lkh_subpaths': self.process_lkh_subpaths,
-            'subpath_history_table': self.subpath_history_table,
-            'subpath_length_limit': self.subpath_length_limit,
-            'lkh_subpaths_only': self.lkh_subpaths_only,
-            'trace': self.trace,
-            'trace_detail_level': self.trace_detail_level,
-            'background': self.background,
-            'branch': self.branch,
-            'tag': self.tag
-        }
+        return asdict(self)
     
     @classmethod
     def load(cls, data):
@@ -224,6 +147,7 @@ DEFAULT_CONFIG = Config(
     subpath_history_table = False,
     subpath_length_limit = 0,
     lkh_subpaths_only = False,
+    expected_lkh_cost = 0,
     trace = False,
     trace_detail_level = 0,
     background = False,

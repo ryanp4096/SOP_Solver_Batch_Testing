@@ -89,7 +89,14 @@ class Batch:
         for item in self.items:
             tag = f" [{item.config.tag}]" if item.config.tag else ""
             print(f'{item.index}. {item.instance.name}{tag} ({item.config.runs} runs)')
-        name = input('Enter name to create: ')
+        try:
+            name = input('Enter name to create: ')
+        except EOFError:
+            print()
+            exit(0)
+        except KeyboardInterrupt:
+            print()
+            exit(0)
         if name: self.name = name
 
         self.create_directory()
