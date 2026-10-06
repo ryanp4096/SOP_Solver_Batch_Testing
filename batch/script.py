@@ -18,7 +18,7 @@ create_build() {
         [[ $# -ge 2 ]] && shift 2 || shift
         make clean
         git checkout $branch
-        make $@ || { git checkout -; exit 1; }
+        make $@ -j -O || { git checkout -; exit 1; }
         git checkout -
         mv sop_solver "$BUILDS/$branch$custom"
     ) &>> "$LOG"
