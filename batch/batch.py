@@ -1,3 +1,4 @@
+from functools import reduce
 import os
 import json
 from copy import copy
@@ -80,15 +81,22 @@ class Batch:
 
     def create(self):
         print(f'Batch: {len(self.items)} items, {sum(item.config.runs for item in self.items)} runs')
+        
         if self.settings.time_estimate:
             estimate, unknown = self.total_time_estimate()
             line = format_time_estimate(estimate, short=False)
             if len(unknown) > 0:
                 line += f", plus unknown time from {len(unknown)} instances: {', '.join(unknown)}"
             print(f'Time Estimate: {line}')
+        
         for item in self.items:
             tag = f" [{item.config.tag}]" if item.config.tag else ""
             print(f'{item.index}. {item.instance.name}{tag} ({item.config.runs} runs)')
+        
+        custom_params = reduce(lambda x, y: x | y, (set(item.config.custom.keys()) for item in self.items), set())
+        if custom_params:
+            print("Using custom config options: " + ", ".join(custom_params))
+        
         try:
             name = input('Enter name to create: ')
         except EOFError:

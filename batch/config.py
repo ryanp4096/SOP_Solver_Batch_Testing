@@ -1,5 +1,5 @@
 from .instance import Instance
-from dataclasses import dataclass, asdict, fields
+from dataclasses import dataclass, asdict, fields, field
 
 class TraceDetailLevel:
     NORMAL = 0
@@ -25,6 +25,7 @@ class Config:
     background: bool = None
     branch: str = None
     tag: str = None
+    custom: dict = field(default_factory=dict)
     
     @classmethod
     def merge(cls, *configs):
@@ -33,16 +34,39 @@ class Config:
         return merged
 
     def set(self, *configs, **kwargs):
+        config: Config
         for config in configs:
             if config is None: continue
+            
             for f in fields(self):
+                if f.name == "custom": continue
                 x = config.__getattribute__(f.name)
-                if x is not None: self.__setattr__(f.name, x)
+                if x is not None:
+                    self.__setattr__(f.name, x)
+            
+            if config.custom:
+                for key, value in config.custom.items():
+                    if value is not None:
+                        self.custom[key] = value
         
         if kwargs:
+            kwargs_copy = kwargs.copy()
             for f in fields(self):
-                x = kwargs.get(f.name)
+                if f.name == "custom": continue
+                try: x = kwargs_copy.pop(f.name)
+                except: continue
                 if x is not None: self.__setattr__(f.name, x)
+
+            try: kwargs_custom = kwargs_copy.pop("custom")
+            except: kwargs_custom = None
+            if kwargs_custom and isinstance(kwargs_custom, dict):
+                for key, value in kwargs_custom.items():
+                    if value is not None:
+                        self.custom[key] = value
+            
+            for key, value in kwargs_copy.items():
+                if value is not None:
+                    self.custom[key] = value
     
     def config_file(self, instance: Instance):
         return f'''
@@ -115,7 +139,7 @@ TRACE_DETAIL_LEVEL = {self.trace_detail_level}
 // Enable separate history table for subpaths (1 for enable, 0 for disable)
 ENABLE_SUBPATH_HISTORY_TABLE = {1 if self.subpath_history_table else 0}
 
-// The maximum length of subpaths included in subpath history table (0 = no limit)
+// The maximum length of subpaths included in subpath history table (-1 = no limit)
 SUBPATH_LENGTH_LIMIT = {self.subpath_length_limit}
 
 // Store only subpaths of LKH's best tour in the history table for faster processing (0 = enable, 1 = disable)
@@ -124,7 +148,8 @@ LKH_SUBPATHS_ONLY = {1 if self.lkh_subpaths_only else 0}
 // For debugging: Keep running lkh after end time until this cost is reached (0 = disable)
 // Only used to get consistent LKH behavior for debugging - do not use in official runs, as expected cost should be unknown
 EXPECTED_LKH_COST = {self.expected_lkh_cost}
-'''
+
+''' + "\n".join([f'{key} = {value}' for key, value in self.custom.items()])
     
     def dump(self):
         return asdict(self)
@@ -145,12 +170,13 @@ DEFAULT_CONFIG = Config(
     finish_lkh_before_bb = False,
     process_lkh_subpaths = True,
     subpath_history_table = False,
-    subpath_length_limit = 0,
+    subpath_length_limit = -1,
     lkh_subpaths_only = False,
     expected_lkh_cost = 0,
     trace = False,
     trace_detail_level = 0,
     background = False,
     branch = None,
-    tag = None
+    tag = None,
+    custom = {}
 )

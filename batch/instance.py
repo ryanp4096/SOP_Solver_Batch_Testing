@@ -11,11 +11,11 @@ class Instance:
         'prob.42': 5,
         'rbg048a': 5,
         'rbg253a': 25, # 20
-        'R.200.1000.1': 15, # 10    # not optimal
-        'R.300.100.15': 70,         # not optimal
-        'R.300.1000.15': 500,       # not optimal
-        'R.400.100.15': 440,        # not optimal
-        'R.400.1000.15': 130,       # not optimal
+        # 'R.200.1000.1': 15, # 10    # not optimal
+        # 'R.300.100.15': 70,         # not optimal
+        # 'R.300.1000.15': 500,       # not optimal
+        # 'R.400.100.15': 440,        # not optimal
+        # 'R.400.1000.15': 130,       # not optimal
         'ESC78': 60,
         'ft53.1': 60,
         'ft53.2': 60,
@@ -41,6 +41,7 @@ class Instance:
         'prob.42': 43,
         'rbg048a': 316,
         'rbg253a': 96,
+        'ry48p.3': 3420,
         'R.200.1000.1': 100,
         'R.300.100.15': 127,
         'R.300.1000.15': 613,
